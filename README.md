@@ -185,4 +185,44 @@ val_accuracy = **0.6260** (en dessous du seuil de la classe majoritaire à 65%).
 
 ---
 
+## Phase 7 - Baseline PMC multiclassification (Wine Quality)
+
+**Fichier :** `phase7_wine_baseline.py`  
+**Dataset :** Wine Quality UCI - 1 599 vins rouges, 11 features chimiques, 3 classes (low/medium/high)  
+**Objectif :** premier modèle de multiclassification, softmax + sparse_categorical_crossentropy
+
+### Scénario normal
+
+| Métrique | Valeur |
+|---|---|
+| Val_accuracy finale (epoch 100) | 0.8555 |
+| Test accuracy | **0.8594** |
+| Val_accuracy max | 0.8633 (epochs 81 et 94) |
+
+Architecture : Dense(64, relu) -> Dense(32, relu) -> Dense(3, softmax) - 2 947 paramètres
+
+Overfitting tardif : val_loss minimale à l'epoch 22 (0.4573), remonte à 0.59 à l'epoch 100 pendant que la train loss descend à 0.14. Moins agressif qu'en phase 4 grâce au dataset plus grand (1 279 exemples en train). Le test accuracy dépasse la val_accuracy finale : bonne généralisation.
+
+Distribution classes : medium ~82%, high ~14%, low ~4%. Le modèle atteint 77% dès l'epoch 1 en apprenant rapidement la classe majoritaire.
+
+### Cas limite - stratify
+
+| Split | Classe 0 (low) dans train |
+|---|---|
+| Sans stratify (random_state=42) | 52 exemples |
+| Avec stratify | 50 exemples |
+
+Écart faible ici (grand dataset, seed favorable). Sur un petit dataset ou un autre seed, sans stratify la classe low peut disparaître complètement du train.
+
+### Scénario adversarial - sigmoid au lieu de softmax
+
+| Activation | Exemple : somme des 3 sorties |
+|---|---|
+| softmax (correct) | **1.0000** (toujours) |
+| sigmoid (bug) | 1.68, 1.42, 1.74 (somme > 1) |
+
+Avec sigmoid, les 3 neurones de sortie sont indépendants et ne se coordonnent pas. Les sorties ne sont plus des probabilités, elles ne peuvent pas être interprétées comme telles.
+
+---
+
 *Phases suivantes : en cours*
