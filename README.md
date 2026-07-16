@@ -153,4 +153,36 @@ Différence faible (0.008) car sur Pima les logits restent majoritairement posit
 
 ---
 
+## Phase 5 - Régularisation (Pima Diabetes)
+
+**Fichier :** `phase5_pima_regularisation.py`  
+**Objectif :** comparer baseline, L2, et L2+Dropout sur overfit/convergence
+
+### Scénario normal - 3 configurations
+
+| Config | Epoch arrêt | Val_accuracy max | Comportement courbes |
+|---|---|---|---|
+| Baseline | 42 | 0.7724 | écart train/val visible, divergence progressive |
+| L2 seul | 90 | 0.7642 | courbes collées plus longtemps, convergence plus lente |
+| L2 + Dropout | 106 | **0.7805** | courbes quasi confondues tout le long |
+
+L2 + Dropout donne la meilleure val_accuracy ET les courbes les plus saines (train et val restent proches). Graphe disponible : `phase5_pima_3configs.png`.
+
+### Cas limite (qualité tests)
+
+L2 réduit l'overfit de 75% sur 100 epochs :
+
+| Config | Écart train-val (loss) | Interprétation |
+|---|---|---|
+| Baseline | -0.3325 | val_loss dépasse train_loss de 0.33 = overfit fort |
+| L2 (0.01) | -0.0823 | val_loss dépasse train_loss de 0.08 = overfit réduit |
+
+Dropout désactivé en inférence : confirmé (deux appels `predict()` identiques).
+
+### Scénario adversarial - L2 lambda=10
+
+val_accuracy = **0.6260** (en dessous du seuil de la classe majoritaire à 65%). Lambda trop fort écrase les poids à zéro, le modèle fait pire qu'une règle naïve.
+
+---
+
 *Phases suivantes : en cours*
