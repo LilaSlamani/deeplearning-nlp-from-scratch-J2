@@ -113,4 +113,44 @@ Runs california_raw  trouvés : 1
 
 ---
 
+## Phase 4 - Baseline PMC classification binaire (Pima Diabetes)
+
+**Fichier :** `phase4_pima_baseline.py`  
+**Dataset :** Pima Indians Diabetes - 768 patientes, 8 features médicales, cible binaire (0/1)  
+**Objectif :** premier modèle de classification binaire, sigmoid + binary_crossentropy
+
+### Scénario normal
+
+| Métrique | Valeur |
+|---|---|
+| Meilleure val_accuracy | **0.7724** (epoch 5-8) |
+| val_accuracy epoch 100 | 0.7480 |
+| accuracy train epoch 100 | 0.9063 |
+| Moyenne des prédictions | 0.3858 (pas de collapse sur classe 0) |
+
+Architecture : Dense(64, relu) -> Dense(32, relu) -> Dense(1, sigmoid) - 2 689 paramètres
+
+**Overfitting prononcé** : le meilleur score de validation est atteint dès l'epoch 5-8, puis la val_loss remonte de 0.48 à 0.54 tandis que la loss train continue de descendre à 0.26. Écart de 16 points entre train accuracy (91%) et val_accuracy (75%) à l'epoch 100. Phase 5 (régularisation) corrige exactement ça.
+
+### Cas limite - Entrée hors distribution
+
+Entrée : `Glucose=-99999, BMI=0` (valeurs impossibles)
+
+| Sortie sigmoid | Interprétation |
+|---|---|
+| **1.0000** | Modèle sûr à 100% que la patiente est diabétique |
+
+La sigmoid respecte la contrainte [0,1] mais extrapole sans garde-fou. En production, il faut valider les entrées avant d'appeler `predict()`.
+
+### Scénario adversarial - relu à la sortie au lieu de sigmoid
+
+| Activation sortie | val_accuracy (10 epochs) |
+|---|---|
+| sigmoid (correct) | **0.7642** |
+| relu (bug) | 0.7561 |
+
+Différence faible (0.008) car sur Pima les logits restent majoritairement positifs. Le bug relu est plus visible sur des datasets où les logits sont souvent négatifs.
+
+---
+
 *Phases suivantes : en cours*
