@@ -225,4 +225,41 @@ Avec sigmoid, les 3 neurones de sortie sont indépendants et ne se coordonnent p
 
 ---
 
+## Phase 6 - Keras Tuner RandomSearch (Pima Diabetes)
+
+**Fichier :** `phase6_pima_kerastuner.py`  
+**Objectif :** trouver automatiquement les meilleurs hyperparamètres via 15 trials aléatoires
+
+### Top 5 trials
+
+| Trial | units_1 | units_2 | activation | dropout | lr | val_accuracy |
+|---|---|---|---|---|---|---|
+| 05 | 32 | 48 | tanh | 0.4 | 0.0005 | **0.7886** |
+| 08 | 32 | 32 | tanh | 0.0 | 0.005 | **0.7886** |
+| 10 | 64 | 64 | tanh | 0.3 | 0.0005 | **0.7886** |
+| 03 | 32 | 48 | relu | 0.1 | 0.001 | 0.7805 |
+| 06 | 32 | 32 | tanh | 0.2 | 0.0005 | 0.7805 |
+
+**Best model val_accuracy (réentraîné 200 epochs) : 0.7805**
+
+### Invariants observés
+
+- **tanh** : 4 trials sur 5. Sur Pima (données normalisées, centrées), tanh surpasse relu.
+- **lr=0.0005** : 4 trials sur 5. Learning rate faible = convergence plus stable sur petit dataset.
+- **Pas d'invariant sur dropout/units** : les 3 meilleurs ont le même score malgré des architectures très différentes. Pima est trop petit pour discriminer ces variations.
+
+### Comparaison des phases sur Pima
+
+| Phase | Technique | Val_accuracy max |
+|---|---|---|
+| Phase 4 | Baseline | 0.7724 |
+| Phase 5 | L2 + Dropout | 0.7805 |
+| Phase 6 | Keras Tuner | **0.7886** |
+
+### Cas limite (qualité tests)
+
+seed=42 : deux tuners indépendants avec 3 trials donnent exactement les mêmes hyperparamètres (`Identiques : True`). Espace de recherche minimal (une seule valeur) : tous les trials ont `u=32`, le tuner tourne sans vraiment chercher.
+
+---
+
 *Phases suivantes : en cours*
