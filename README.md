@@ -41,7 +41,43 @@ Entrée : `MedInc=99999, HouseAge=-99999` (valeurs aberrantes impossibles en pro
 | MedInc | 99999 | **52912.40** |
 | HouseAge | -99999 | -7945.60 |
 
-**Observation :** pendant l'entraînement, les valeurs normalisées de MedInc restent entre -2 et +3. Le réseau reçoit ici 52 912 comme entrée : il n'a rien appris dans cette zone, sa prédiction est non fiable. Signal d'alarme en production : toute valeur normalisée > 10 indique une donnée hors distribution.
+**Observation :** pendant l'entraînement, les valeurs normalisées de MedInc restent entre -2 et +3. Le réseau reçoit ici 52 912 comme entrée : il n'a rien appris dans cette zone, sa prédiction est non fiable. c'est un problème en production : toute valeur normalisée > 10 indique une donnée hors distribution.
+
+---
+
+## Phase 2 - Baseline PMC régression (California Housing)
+
+**Fichier :** `phase2_baseline_regression.py`  
+**Objectif :** premier modèle Keras de régression, 100 epochs, lecture des métriques epoch par epoch
+
+### Scénario normal
+
+| Métrique | Attendu (cours) | Obtenu |
+|---|---|---|
+| MAE test | 0.5 à 0.7 | **0.3585** (35 850 $ d'erreur moyenne) |
+| val_loss | descend et se stabilise | stable autour de 0.28-0.29 |
+| Léger overfitting fin | possible | val_loss remonte légèrement epochs 98-100 |
+
+Architecture : Dense(64, relu) -> Dense(32, relu) -> Dense(1) sans activation  
+Mieux qu'attendu : probablement dû aux optimisations TF 2.21.
+
+### Cas limite - Impact du batch_size (10 epochs)
+
+| batch_size | Mises à jour/epoch | val_loss epoch 10 |
+|---|---|---|
+| 1 (SGD pur) | 13 209 | **0.3795** |
+| 13 209 (Batch GD) | 1 | 4.6929 |
+
+SGD pur "gagne" car il fait 132 090 mises à jour vs 10 pour Batch GD. La comparaison n'est pas équitable en nb d'epochs. En pratique : batch=32 est le bon compromis vitesse/stabilité.
+
+### Scénario adversarial - Entraînement sans normalisation
+
+| | val_loss epoch 1 | val_loss epoch 10 |
+|---|---|---|
+| Sans normalisation | **1.90** (loss train = 113.87) | 0.99 (oscillations) |
+| Avec normalisation | ~0.85 | ~0.28 |
+
+La loss train démarre à 113.87 à l'epoch 1. Puis oscillations chaotiques (11.14 -> 3.64 -> 7.32) car Latitude/Longitude (~37-122) déséquilibrent les gradients et déstabilisent Adam. La normalisation n'est pas optionnelle.
 
 ---
 
