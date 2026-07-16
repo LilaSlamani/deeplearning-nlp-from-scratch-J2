@@ -81,4 +81,36 @@ La loss train démarre à 113.87 à l'epoch 1. Puis oscillations chaotiques (11.
 
 ---
 
+## Phase 3 - TensorBoard (California Housing)
+
+**Fichier :** `phase3_tensorboard_california.py`  
+**Objectif :** comparer visuellement l'impact de la normalisation via deux runs TensorBoard horodatés
+
+### Scénario normal
+
+| Run | val_loss (tendance) | Comportement |
+|---|---|---|
+| california_norm | stable ~0.3 - 0.4 | convergence propre et régulière |
+| california_raw | oscille entre 0.5 et 5+ | dégradé, instable tout le long |
+
+Logs générés dans `logs/fit/` avec timestamp (format `HHMMSS`).  
+Commande pour visualiser : `tensorboard --logdir=logs/fit`
+
+### Cas limite
+
+Logdir inexistant (`tensorboard --logdir=logs/fit_vide`) : TensorBoard démarre sans erreur mais affiche "No dashboards are active". Piège courant : on croit que l'entraînement a raté alors que c'est juste le chemin qui est faux.
+
+### Scénario adversarial
+
+Deux instances TensorBoard sur le même port 6006 : la seconde refuse de démarrer avec "address already in use". Solution Windows : fermer le premier terminal.
+
+### Vérification automatique
+
+```
+Runs california_norm trouvés : 3
+Runs california_raw  trouvés : 1
+```
+
+---
+
 *Phases suivantes : en cours*
